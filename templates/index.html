@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGN SPEAK AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+        <div id="landing-page" class="landing-page">
+                
+                <div class="landing-content hand-drawn-border landing-content-large">
+                        <div class="landing-header-row">
+                                <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4dd.svg" alt="Pencil Icon" class="landing-pencil">
+                                <h1 class="landing-title">Sign Speak</h1>
+                        </div>
+                        <p class="landing-desc">
+                                <b>Breaking Barriers, Building Bridges!</b><br>
+                                <span style="font-size:1.2em;">A creative, real-time sign language translator.</span>
+                        </p>
+                        <div class="landing-icons-row labeled-icons">
+                                <div class="icon-label-col">
+                                    <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f91a.svg" alt="Sign Icon" class="landing-icon">
+                                    <div class="icon-label">Sign</div>
+                                </div>
+                                <div class="icon-label-col">
+                                    <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f91c.svg" alt="Gesture Icon" class="landing-icon">
+                                    <div class="icon-label">Gesture</div>
+                                </div>
+                                <div class="icon-label-col">
+                                    <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f590.svg" alt="Open Palm Icon" class="landing-icon">
+                                    <div class="icon-label">Open Palm</div>
+                                </div>
+                        </div>
+                        <button id="get-started-btn" class="btn landing-btn sticky-note">
+                            <span class="btn-text">Get Started</span>
+                            <span class="loading-spinner" style="display: none;">Loading...</span>
+                        </button>
+                </div>
+        </div>
+        <div class="container" id="main-app" style="display:none;">
+        <header class="main-header">
+            <div class="nav-left">
+                <div class="logo-container">
+                    <div class="mic-icon"></div>
+                    <div class="logo-text">
+                        <span class="site-title">SIGN SPEAK</span>
+                        <span class="site-subtitle">AI</span>
+                    </div>
+                </div>
+                <div class="real-time-badge">REAL TIME DETECTION</div>
+            </div>
+            <nav class="nav-links">
+                <a href="#home" class="nav-link active" id="home-link">Home</a>
+                <a href="#alerts" class="nav-link" id="alerts-link">Alerts</a>
+                <a href="#about-us" class="nav-link" id="about-us-link">About Us</a>
+            </nav>
+        </header>
+        <main class="main-content">
+            <div class="main-app-card">
+                <div class="main-app-flex">
+                    <div class="main-app-video-col">
+                        <div class="main-app-video-frame">
+                            <video id="webcam" autoplay playsinline></video>
+                            <canvas id="canvas" class="output_canvas"></canvas>
+                        </div>
+                    </div>
+                    <div class="main-app-output-col">
+                        <h2 class="main-app-title">Detected Sign</h2>
+                        <div id="output" class="main-app-output"></div>
+                        <div class="main-app-controls">
+                            <label for="lang-select">Convert to: </label>
+                            <select id="lang-select" class="dropdown">
+                                <option value="en">English</option>
+                                <option value="hi">Hindi</option>
+                            </select>
+                            <div class="auto-translate-container">
+                                <input type="checkbox" id="auto-translate" class="auto-translate-checkbox">
+                                <label for="auto-translate">Auto-translate</label>
+                            </div>
+                            <button id="convert-speak-btn" class="btn main-app-btn">Convert & Speak</button>
+                        </div>
+                        <div id="translated-text" class="output-box"></div>
+                    </div>
+                </div>
+                
+            </div>
+        </main>
+        <div id="alerts-overlay" class="overlay-section" style="display:none;">
+            <button class="close-overlay" id="close-alerts">&times;</button>
+            <div class="alerts-box">
+                <h2>Alerts</h2>
+                <div id="alerts">Your browser may request microphone access.</div>
+            </div>
+        </div>
+        <div id="about-overlay" class="overlay-section" style="display:none;">
+            <button class="close-overlay" id="close-about">&times;</button>
+            <div class="about-box">
+                <h2>About Us</h2>
+                <p>At <b>SIGN SPEAK</b>, we're pioneering real-time gesture recognition that translates hand movements into clear, readable text using your device's live camera feed. Built as a sleek and efficient prototype, our solution harnesses computer vision and lightweight machine learning models to capture and convert sign language and hand gestures into text—instantly, accurately, and intuitively.</p>
+            </div>
+        </div>
+        <footer>
+            <p>&copy; 2024 Sign Speak</p>
+        </footer>
+    </div>
+    
+    <script>
+        /
+        function initFastWebcam() {
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('canvas');
+            const output = document.getElementById('output');
+            const alerts = document.getElementById('alerts');
+            
+            if (!video || !canvas) return;
+            
+            
+            navigator.mediaDevices.getUserMedia({ 
+                video: { width: 640, height: 480, facingMode: 'user' }, 
+                audio: false 
+            })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+                
+                
+                const ctx = canvas.getContext('2d');
+                canvas.width = 640;
+                canvas.height = 480;
+                
+                function drawFrame() {
+                    ctx.drawImage(video, 0, 0, 640, 480);
+                    requestAnimationFrame(drawFrame);
+                }
+                
+                video.onloadedmetadata = () => {
+                    drawFrame();
+                    if (alerts) alerts.textContent = 'Webcam active! Show your hands.';
+                };
+            })
+            .catch(err => {
+                console.error('Camera error:', err);
+                if (alerts) alerts.textContent = 'Camera access denied. Please allow camera access.';
+            });
+        }
+        
+        
+        window.addEventListener('load', initFastWebcam);
+    </script>
+    <script src="/static/script_new.js"></script>
+</body>
+</html>
